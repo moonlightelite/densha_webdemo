@@ -1,0 +1,72 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>GL probe</title></head>
+<body style="margin:0">
+<canvas id="c" width="256" height="144"></canvas>
+<script>
+function post(t, s) {
+  try { fetch('/upload?n=console', { method: 'POST', body: t + ': [glprobe] ' + s + '\n' }); } catch (e) {}
+  try { fetch('/upload?n=state', { method: 'POST', body: 'glprobe ' + s + '\n' }); } catch (e) {}
+}
+post('W', 'UA=' + navigator.userAgent);
+var gl = null;
+try { gl = document.getElementById('c').getContext('webgl2', { antialias: false, alpha: false }); } catch (e) { post('W', 'webgl2 threw: ' + e); }
+if (!gl) {
+  post('W', 'VERDICT: no webgl2 context');
+} else {
+  post('L', 'webgl2 ok vendor=' + gl.getParameter(gl.VENDOR) + ' renderer=' + gl.getParameter(gl.RENDERER)
+    + ' maxTex=' + gl.getParameter(gl.MAX_TEXTURE_SIZE)
+    + ' maxRB=' + gl.getParameter(gl.MAX_RENDERBUFFER_SIZE)
+    + ' maxVS=' + gl.getParameter(gl.MAX_VERTEX_ATTRIBS));
+  // clear red, read back
+  gl.clearColor(1, 0, 0, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  var px = new Uint8Array(4);
+  gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+  post('L', 'readback=' + px[0] + ',' + px[1] + ',' + px[2] + ',' + px[3]);
+  // draw a triangle and read back center
+  var vs = '#version 300 es\nin vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  var fs = '#version 300 es\nprecision mediump float;out vec4 o;void main(){o=vec4(0.,1.,0.,1.);}';
+  function sh(t2, src) { var s = gl.createShader(t2); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) post('W', 'shader err ' + gl.getShaderInfoLog(s)); return s; }
+  var pr = gl.createProgram();
+  gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs));
+  gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(pr);
+  if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) post('W', 'link err ' + gl.getProgramInfoLog(pr));
+  gl.useProgram(pr);
+  var b = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, b);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-0.5,-0.5, 0.5,-0.5, 0,0.5]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  gl.clearColor(0, 0, 0, 1); gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  var e = gl.getError();
+  var big = new Uint8Array(256 * 144 * 4);
+  gl.readPixels(0, 0, 256, 144, gl.RGBA, gl.UNSIGNED_BYTE, big);
+  var g = 0, r = 0;
+  for (var i = 0; i < big.length; i += 4) { if (big[i + 1] > 200) g++; if (big[i] > 200) r++; }
+  post('L', 'triangle glerr=' + e.toString(16) + ' greenpx=' + g + ' redpx=' + r);
+  // 4096x4096 texture (the demo's atlas size)
+  var tx = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tx);
+  try {
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 4096, 4096, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    post('L', 'tex4096 RGBA8 err=' + gl.getError().toString(16));
+  } catch (err) { post('W', 'tex4096 threw ' + err); }
+  // FBO render target like the demo
+  var fb = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+  var rb = gl.createRenderbuffer();
+  gl.bindRenderbuffer(gl.RENDERBUFFER, rb);
+  gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA8, 854, 480);
+  gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, rb);
+  var db = gl.createRenderbuffer();
+  gl.bindRenderbuffer(gl.RENDERBUFFER, db);
+  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH24_STENCIL8, 854, 480);
+  gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, db);
+  post('L', 'fbo status=' + gl.checkFramebufferStatus(gl.FRAMEBUFFER).toString(16) + ' err=' + gl.getError().toString(16));
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  post('L', 'VERDICT: webgl2 functional');
+}
+</script></body></html>

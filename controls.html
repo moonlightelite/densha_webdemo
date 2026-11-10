@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Densha de Go! — Keyboard Controls (Web Demo)</title>
+<style>
+  /* Styled like web/shell.html (the same dark monospace look). */
+  html, body { margin: 0; padding: 0; background: #000; min-height: 100%; }
+  body {
+    font: 14px/1.7 monospace; color: #cde;
+    max-width: 760px; margin: 0 auto; padding: 28px 20px 64px;
+  }
+  h1 { font-size: 20px; color: #fff; margin: 0 0 4px; }
+  h2 { font-size: 15px; color: #9fd; margin: 28px 0 8px; border-bottom: 1px solid #345; padding-bottom: 4px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 5px 10px; border-bottom: 1px solid #234; vertical-align: top; }
+  th { color: #8ab; font-weight: normal; }
+  td.k { color: #ffd; white-space: nowrap; }
+  kbd {
+    font: 13px monospace; background: #123; border: 1px solid #456;
+    border-radius: 4px; padding: 1px 7px; color: #ffe;
+  }
+  .note { color: #89a; font-size: 12px; }
+  .sub {
+    color: #cde; background: rgba(255,255,255,.05); border: 1px solid #345;
+    border-radius: 6px; padding: 10px 14px; margin: 18px 0 8px;
+  }
+  .back {
+    display: inline-block; margin-top: 30px; font: bold 15px monospace;
+    color: #000; background: #9fd; border-radius: 6px; padding: 10px 22px;
+    text-decoration: none;
+  }
+  .back:hover { background: #fff; }
+</style>
+</head>
+<body>
+<!-- KEEP-IN-SYNC: this table mirrors README.md's "Controls" section, and
+     README.md points back here. The source of truth is src/main.cpp's
+     keyboard handling (the SDL scancode edges) + web_compat.h's browser-key
+     shim (which keys actually reach the game in the browser). -->
+
+<h1>Keyboard Controls — Densha de Go! web demo</h1>
+<p class="sub">Web demo compiled by moonlightelite. For education purpose only.</p>
+
+<p>The demo boots straight into the Yamanote Diagram&nbsp;#1 run with the
+autodrive AI at the controls. Press <kbd>A</kbd> to take over manually (the
+notch/brake keys below then drive the train); press <kbd>A</kbd> again to hand
+control back to the AI. Every control below works while the run is on screen;
+the menu keys work on the menu screens.</p>
+
+<h2>Driving (with autodrive off — <kbd>A</kbd>)</h2>
+<table>
+  <tr><th>Input</th><th>Key</th></tr>
+  <tr><td>Power notches (detents N1–N5)</td><td class="k"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> <kbd>5</kbd></td></tr>
+  <tr><td>Neutral (N)</td><td class="k"><kbd>0</kbd></td></tr>
+  <tr><td>Brake step down / up (B1–B8)</td><td class="k"><kbd>[</kbd> / <kbd>]</kbd></td></tr>
+  <tr><td>Emergency brake (EB, B9)</td><td class="k"><kbd>\</kbd> or <kbd>Delete</kbd></td></tr>
+</table>
+
+<h2>Mode toggles</h2>
+<table>
+  <tr><th>Input</th><th>Key</th></tr>
+  <tr><td>Autodrive on / off (toggle)</td><td class="k"><kbd>A</kbd></td></tr>
+  <tr><td>Framerate 60&nbsp;fps locked / uncapped (toggle)</td><td class="k"><kbd>F</kbd></td></tr>
+  <tr><td>Graphics quality Normal → Good → Best (cycle)</td><td class="k"><kbd>G</kbd></td></tr>
+</table>
+
+<h2>Other in-run keys</h2>
+<table>
+  <tr><th>Input</th><th>Key</th></tr>
+  <tr><td>Horn (hold)</td><td class="k"><kbd>X</kbd></td></tr>
+  <tr><td>View switch (cab ↔ exterior camera)</td><td class="k"><kbd>S</kbd> or <kbd>V</kbd></td></tr>
+  <tr><td>Doors left / right (conductor course; the driver's door-close wait)</td><td class="k"><kbd>Q</kbd> / <kbd>E</kbd></td></tr>
+  <tr><td>ATS acknowledge</td><td class="k"><kbd>Space</kbd> (or <kbd>Enter</kbd>)</td></tr>
+</table>
+<p class="note">The acknowledge key is accepted and recorded, but this demo has
+no ATS-stop surface, so pressing it changes nothing yet.</p>
+
+<h2>Menus</h2>
+<table>
+  <tr><th>Input</th><th>Key</th></tr>
+  <tr><td>Navigate</td><td class="k"><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td></tr>
+  <tr><td>Confirm</td><td class="k"><kbd>Enter</kbd></td></tr>
+  <tr><td>Back / cancel</td><td class="k"><kbd>Esc</kbd></td></tr>
+</table>
+
+<h2>Pause menu (in-run)</h2>
+<table>
+  <tr><th>Input</th><th>Key</th></tr>
+  <tr><td>Open the pause menu</td><td class="k"><kbd>Enter</kbd></td></tr>
+  <tr><td>Move the cursor (Resume / Quit Run)</td><td class="k"><kbd>↑</kbd> <kbd>↓</kbd></td></tr>
+  <tr><td>Confirm (Resume unpauses; Quit Run ends the run into the result screen)</td><td class="k"><kbd>Enter</kbd></td></tr>
+  <tr><td>Cancel (= Resume)</td><td class="k"><kbd>Esc</kbd></td></tr>
+</table>
+<p class="note">Keys are one pulse per press: the press that opens the menu
+doesn't also confirm, and a press inside a long render stall is not lost.</p>
+<p class="note">The demo runs with the autodrive AI so the notches/brakes are
+inert until you press <kbd>A</kbd>. The conductor course (menu row) uses
+<kbd>1</kbd>–<kbd>8</kbd> to answer the station-announcement quizzes.</p>
+
+<p class="note">This page mirrors README.md's <em>Controls</em> section in the
+demo repo — keep the two in sync when a key changes (the source of truth is
+<code>src/main.cpp</code>'s keyboard handling).</p>
+
+<a class="back" href="dgf.html" onclick="try { if (window.history.length > 1 && document.referrer) { history.back(); return false; } } catch (e) {}">◀ Back to the game — continue driving</a>
+
+</body>
+</html>
