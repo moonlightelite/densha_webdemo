@@ -1,4 +1,4 @@
-# Densha de Go! — Yamanote web demo
+# Densha de Go! Plug and Play web demo
 
 A standalone, browser-runnable WASM build of the Densha de Go! clean-room
 reimplementation. It loads straight into a **6-stop slice of Yamanote
